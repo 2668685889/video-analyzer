@@ -1,0 +1,130 @@
+name: Build Windows Executable
+
+# 触发条件
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.12']
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置Python环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: 缓存pip依赖
+      uses: actions/cache@v3
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: 升级pip
+      run: |
+        python -m pip install --upgrade pip
+    
+    - name: 安装项目依赖
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: 清理缓存文件
+      run: |
+        if (Test-Path build) { Remove-Item -Recurse -Force build }
+        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
+        Get-ChildItem -Path . -Recurse -Name "__pycache__" | Remove-Item -Recurse -Force
+    
+    - name: 编译Windows可执行文件
+      run: |
+        pyinstaller main.spec --clean --noconfirm --log-level INFO
+    
+    - name: 验证编译结果
+      run: |
+        if (Test-Path "dist\VideoAnalyzer\VideoAnalyzer.exe") {
+          Write-Host "✅ 编译成功！"
+          $fileSize = (Get-Item "dist\VideoAnalyzer\VideoAnalyzer.exe").Length
+          Write-Host "📦 文件大小: $([math]::Round($fileSize/1MB, 2)) MB"
+        } else {
+          Write-Host "❌ 编译失败：未找到可执行文件"
+          exit 1
+        }
+    
+    - name: 创建发布包
+      run: |
+        Compress-Archive -Path "dist\VideoAnalyzer\*" -DestinationPath "VideoAnalyzer-Windows-${{ github.sha }}.zip"
+    
+    - name: 上传编译产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: VideoAnalyzer-Windows-${{ matrix.python-version }}
+        path: |
+          dist/VideoAnalyzer/
+          VideoAnalyzer-Windows-${{ github.sha }}.zip
+        retention-days: 30
+    
+    - name: 发布到Release（仅标签触发）
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: VideoAnalyzer-Windows-${{ github.sha }}.zip
+        name: VideoAnalyzer ${{ github.ref_name }}
+        body: |
+          ## 🎉 VideoAnalyzer Windows版本 ${{ github.ref_name }}
+          
+          ### 📦 下载说明
+          1. 下载 `VideoAnalyzer-Windows-*.zip` 文件
+          2. 解压到任意目录
+          3. 双击 `VideoAnalyzer.exe` 运行程序
+          
+          ### 🔧 系统要求
+          - Windows 10/11 (推荐)
+          - Windows 8.1 (最低支持)
+          - 64位系统
+          
+          ### ⚠️ 注意事项
+          - 首次运行可能需要几秒钟加载时间
+          - 如遇杀毒软件报警，请添加信任
+          - 请保持所有文件完整，不要单独复制exe文件
+          
+          ### 🐛 问题反馈
+          如遇到问题，请在 [Issues](https://github.com/${{ github.repository }}/issues) 中反馈
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 构建信息汇总
+  build-summary:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 构建结果汇总
+      run: |
+        echo "## 🏗️ 构建结果汇总" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| 平台 | 状态 | Python版本 |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|------|------------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Windows | ${{ needs.build-windows.result == 'success' && '✅ 成功' || '❌ 失败' }} | 3.12 |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.build-windows.result }}" = "success" ]; then
+          echo "🎉 Windows版本编译成功！可在Actions页面下载编译产物。" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Windows版本编译失败，请检查构建日志。" >> $GITHUB_STEP_SUMMARY
+        fi

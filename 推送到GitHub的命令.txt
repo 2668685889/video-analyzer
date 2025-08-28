@@ -1,0 +1,26 @@
+# 推送项目到GitHub的完整命令
+
+## 第1步：在GitHub创建仓库后，复制仓库URL
+# 例如：https://github.com/您的用户名/video-analyzer.git
+
+## 第2步：在终端中执行以下命令
+
+# 添加远程仓库（请替换为您的实际仓库URL）
+git remote add origin https://github.com/您的用户名/video-analyzer.git
+
+# 设置主分支名称
+git branch -M main
+
+# 推送代码到GitHub
+git push -u origin main
+
+## 推送完成后会自动触发GitHub Actions编译
+
+## 可选：创建版本标签（会自动发布到Releases）
+# git tag v1.0.0
+# git push origin v1.0.0
+
+## 后续更新代码的命令
+# git add .
+# git commit -m "更新说明"
+# git push

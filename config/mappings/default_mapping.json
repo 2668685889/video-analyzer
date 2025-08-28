@@ -1,0 +1,67 @@
+{
+  "config_name": "默认映射配置",
+  "version": "1.0.0",
+  "created_at": "2025-08-23T19:19:44.573292",
+  "description": "系统默认的字段映射配置",
+  "ai_fields": {
+    "video_serial_id": {
+      "type": "text",
+      "description": "视频序列号",
+      "required": true
+    },
+    "video_content_summary": {
+      "type": "text",
+      "description": "视频内容摘要",
+      "required": true
+    },
+    "video_highlights": {
+      "type": "text",
+      "description": "视频亮点",
+      "required": false
+    },
+    "video_tags": {
+      "type": "text",
+      "description": "视频标签",
+      "required": false
+    },
+    "video_category": {
+      "type": "text",
+      "description": "视频分类",
+      "required": false
+    }
+  },
+  "feishu_mappings": {
+    "video_serial_id": {
+      "field_name": "视频序列号",
+      "field_type": "text",
+      "field_id": "fld_video_serial_id"
+    },
+    "video_content_summary": {
+      "field_name": "内容摘要",
+      "field_type": "text",
+      "field_id": "fld_content_summary"
+    },
+    "video_highlights": {
+      "field_name": "视频亮点",
+      "field_type": "text",
+      "field_id": "fld_video_highlights"
+    },
+    "video_tags": {
+      "field_name": "标签",
+      "field_type": "text",
+      "field_id": "fld_video_tags"
+    },
+    "video_category": {
+      "field_name": "分类",
+      "field_type": "text",
+      "field_id": "fld_video_category"
+    }
+  },
+  "transformation_rules": {
+    "video_tags": {
+      "type": "split",
+      "separator": ",",
+      "max_items": 10
+    }
+  }
+}

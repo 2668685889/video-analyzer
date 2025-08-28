@@ -1,0 +1,57 @@
+{
+  "config_name": "最新配置",
+  "version": "1.0.0",
+  "description": "大大快捷",
+  "created_at": "2025-08-23T19:57:33.879047",
+  "ai_fields": {
+    "视频序列号": {
+      "type": "text",
+      "description": "视频序列号",
+      "required": true
+    },
+    "视频内容摘要": {
+      "type": "text",
+      "description": "视频内容摘要",
+      "required": true
+    },
+    "详细内容描述": {
+      "type": "text",
+      "description": "详细内容描述",
+      "required": true
+    },
+    "关键词标签": {
+      "type": "text",
+      "description": "关键词标签",
+      "required": true
+    },
+    "主要对象": {
+      "type": "text",
+      "description": "主要对象",
+      "required": true
+    }
+  },
+  "feishu_mappings": {
+    "视频序列号": {
+      "field_name": "视频序列号",
+      "field_type": "text"
+    },
+    "视频内容摘要": {
+      "field_name": "视频内容摘要",
+      "field_type": "text"
+    },
+    "详细内容描述": {
+      "field_name": "详细内容描述",
+      "field_type": "text"
+    },
+    "关键词标签": {
+      "field_name": "关键词标签",
+      "field_type": "text"
+    },
+    "主要对象": {
+      "field_name": "主要对象",
+      "field_type": "text"
+    }
+  },
+  "transformation_rules": {},
+  "saved_at": "2025-08-23T20:08:06.712228"
+}
